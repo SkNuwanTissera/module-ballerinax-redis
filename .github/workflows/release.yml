@@ -8,7 +8,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    services:
+          redis:
+            image: redis:latest
     steps:
         - uses: actions/checkout@v2
         - name: Set up JDK 11
@@ -80,7 +82,7 @@ jobs:
           uses: ballerina-platform/ballerina-action/@master
           with:
             args:
-              build -c --skip-tests redis
+              pack redis
           env:
             JAVA_HOME: /usr/lib/jvm/default-jvm 
             JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true

@@ -5,6 +5,9 @@ on: [pull_request]
 jobs:
     build:
         runs-on: ubuntu-latest
+        services:
+          redis:
+            image: redis:latest
         steps:
             - uses: actions/checkout@v2
             - name: Set up JDK 11
@@ -49,13 +52,19 @@ jobs:
                         </settings>' > ~/.m2/settings.xml
             - name: Maven Build
               run: mvn clean install 
-            - name: Ballerina Download
-              run: sudo wget http://dist-dev.ballerina.io/downloads/swan-lake-beta3/ballerina-swan-lake-beta3.zip
-            - name: Use Ballerina zip version
-              run: sudo apt-get install -y unzip
-            - run: sudo unzip  ballerina-swan-lake-beta3.zip
+            - name: Ballerina Build 
+              uses: ballerina-platform/ballerina-action/@nightly
+              with: 
+                args: 
+                  pack redis
               env: 
                   JAVA_HOME: /usr/lib/jvm/default-jvm
-                  JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true 
-            - name: Ballerina Build 
-              run: /home/runner/work/module-ballerinax-redis/module-ballerinax-redis/ballerina-swan-lake-beta3/bin/bal build redis
+                  JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true
+            - name: Ballerina Test 
+              uses: ballerina-platform/ballerina-action/@nightly
+              with: 
+                args: 
+                  test redis
+              env: 
+                  JAVA_HOME: /usr/lib/jvm/default-jvm
+                  JAVA_OPTS: -DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true
